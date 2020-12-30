@@ -5,7 +5,7 @@ const path = require('path')
 function createWindow () {
   // Create the browser window.
   const win = new BrowserWindow({
-    width: 800,
+    width: 1280,
     height: 600,
     webPreferences: {
       //contextIsolation: true,
@@ -38,24 +38,33 @@ function createWindow () {
     }
   })
   win.addBrowserView(secondView)
-  secondView.setBounds({ x: 400, y: 0, width: 400, height: 800 })
+  secondView.setBounds({ x: 220, y: 0, width: 1024, height: 600 })
   secondView.webContents.loadURL('https://taobao.com')
 
   secondView.webContents.on('dom-ready', () => {
     secondView.webContents
       .executeJavaScript(
         `
+        let cc = 0
         const waitForExternal = setInterval(() => {
-          if (document.querySelector('.j_logoArea')){
+          if (document.querySelector('.j_logoArea') || document.querySelector('.J_Cover')){
             clearInterval(waitForExternal);
             console.log(11111);
             var tOne = document.querySelector('#oversea-searchbar');
+
+            if(tOne==null){
+              tOne = document.querySelector('.tbh-search');
+            }
             tOne.onclick=function(){
               //alert('111');
               window.pingHost();
             } 
           }else{
             console.log('no');
+            cc++;
+          }
+          if(cc==30){
+            clearInterval(waitForExternal);  
           }
         }, 100);
         `,
@@ -76,8 +85,8 @@ function createWindow () {
   })
 
   // Open the DevTools.
-  //secondView.webContents.openDevTools();
-  win.webContents.openDevTools();
+  secondView.webContents.openDevTools();
+  // win.webContents.openDevTools();
   require('./ipcmain.js')
 }
 
