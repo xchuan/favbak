@@ -6,6 +6,10 @@ global.pingHost = () => {
   ipcRenderer.sendToHost('ping')
 }
 
+global.pingHtml = () => {
+  ipcRenderer.send('senH', document.body.innerHTML);
+}
+
 window.addEventListener('DOMContentLoaded', () => {
   const replaceText = (selector, text) => {
     const element = document.getElementById(selector)

@@ -1,14 +1,15 @@
 // Modules to control application life and create native browser window
 const {app, BrowserWindow, BrowserView} = require('electron')
-const path = require('path')
+const path = require('path');
 
 function createWindow () {
   // Create the browser window.
   const win = new BrowserWindow({
-    width: 1280,
+    width: 1600,
     height: 600,
     webPreferences: {
       //contextIsolation: true,
+      enableRemoteModule:true,
       nodeIntegration: true
       //preload: path.join(__dirname, 'preload.js')
     }
@@ -38,43 +39,54 @@ function createWindow () {
     }
   })
   win.addBrowserView(secondView)
-  secondView.setBounds({ x: 220, y: 0, width: 1024, height: 600 })
+  secondView.setBounds({ x: 200, y: 0, width: 1400, height: 600 })
   secondView.webContents.loadURL('https://taobao.com')
 
   secondView.webContents.on('dom-ready', () => {
-    secondView.webContents
-      .executeJavaScript(
-        `
-        let cc = 0
-        const waitForExternal = setInterval(() => {
-          if (document.querySelector('.j_logoArea') || document.querySelector('.J_Cover')){
-            clearInterval(waitForExternal);
-            console.log(11111);
-            var tOne = document.querySelector('#oversea-searchbar');
+    console.log(secondView.webContents.getURL());
+    let nowurl = secondView.webContents.getURL();
 
-            if(tOne==null){
-              tOne = document.querySelector('.tbh-search');
+    if(nowurl=='https://www.taobao.com/'){
+      secondView.webContents
+        .executeJavaScript(
+          `
+          let cc = 0
+          const waitForExternal = setInterval(() => {
+            if (document.querySelector('.j_logoArea') || document.querySelector('.J_Cover')){
+              clearInterval(waitForExternal);
+              console.log(11111);
+              var tOne = document.querySelector('#oversea-searchbar');
+
+              if(tOne==null){
+                tOne = document.querySelector('.tbh-search');
+              }
+              tOne.onclick=function(){
+                //alert('111');
+                window.pingHost();
+              } 
+            }else{
+              console.log('no');
+              cc++;
             }
-            tOne.onclick=function(){
-              //alert('111');
-              window.pingHost();
-            } 
-          }else{
-            console.log('no');
-            cc++;
-          }
-          if(cc==30){
-            clearInterval(waitForExternal);  
-          }
-        }, 100);
-        `,
-        false,
-        (result) =>
-          console.log('webContents exec callback: ' + result)
-      )
-      .then((result) =>
-        console.log('webContents exec then: ' + result)
-      );
+            if(cc==30){
+              clearInterval(waitForExternal);  
+            }
+          }, 100);
+          `,
+          false,
+          (result) =>
+            console.log('webContents exec callback: ' + result)
+        )
+        .then((result) =>
+          console.log('webContents exec then: ' + result)
+        );
+    }
+    if(String(nowurl).indexOf('item_collect')>-1 || String(nowurl).indexOf('login.jhtml')>-1){
+      console.log('1111111111111');
+      secondView.webContents.executeJavaScript(`
+        window.pingHtml();
+      `);
+    }
   });
   //secondView.webContents.loadFile('tb.html')
   
@@ -85,8 +97,8 @@ function createWindow () {
   })
 
   // Open the DevTools.
-  secondView.webContents.openDevTools();
-  // win.webContents.openDevTools();
+  //secondView.webContents.openDevTools();
+  win.webContents.openDevTools();
   require('./ipcmain.js')
 }
 
