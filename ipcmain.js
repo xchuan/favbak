@@ -19,17 +19,33 @@ ipcMain.on('sendM',function(evt,data) {
 })
 
 ipcMain.on('sendBak',function(evt,data) {
-  console.log(data);
+  console.log(data,'sendBaksendBak');
   let gourl = String(data);
   nowW = BrowserWindow.getAllWindows();
   let allws = nowW[0].getBrowserViews();
-  console.log(nowW[0].getBrowserViews());
+  //console.log(nowW[0].getBrowserViews());
   if(allws.length>0){
     nowView=allws[0].webContents;
-    nowView.loadURL(gourl);
+    //console.log(typeof nowView.webContents,'assssaa1111aa');
+    nowView.executeJavaScript(`
+      window.pingHtml();
+    `);
   }
   //secondView.webContents.loadURL('https://taobao.com')
   //console.log(evt);
+});
+
+ipcMain.on('sendBtm',function(evt,data) {
+  console.log(data,'sendBtmsendBtm3333');
+  let gourl = String(data);
+  nowW = BrowserWindow.getAllWindows();
+  let allws = nowW[0].getBrowserViews();
+  if(allws.length>0){
+    nowView=allws[0].webContents;
+    nowView.executeJavaScript(`
+      window.scrollTo(0,document.body.scrollHeight);
+    `);
+  }
 });
 
 ipcMain.on('sendR',function(evt,data) {
@@ -44,10 +60,10 @@ ipcMain.on('sendR',function(evt,data) {
 
 ipcMain.on('sendH', function(evt,data) {
   //console.log(data,'htmlllllllllll');
-  fs.writeFile("tmp/login.html", data, function(error) {
+  fs.writeFile("tmp/"+data.name+".json", JSON.stringify(data.list), function(error) {
     if (error)
       throw error;
-    console.log("Write HTML successfully.");
+    console.log("Write Data("+data.name+") successfully.");
     
   });
   //const win = BrowserWindow.getFocusedWindow();  

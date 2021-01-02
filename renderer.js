@@ -11,7 +11,10 @@ var sendOne = document.querySelector('#sendone');
 var sendTwo = document.querySelector('#sendtwo');
 var sendBak = document.querySelector('#baknow');
 var sendRefresh = document.querySelector('#refresh');
-
+document.querySelector('#scrolldown').onclick=function(){
+    ipcRenderer.send('sendBtm','1');
+    //window.scrollTo(0,3000)
+}
 document.querySelector('#downnow').onclick=function(){
     dialog.showOpenDialog({
         properties: ['openFile', 'openDirectory']

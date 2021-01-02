@@ -1,6 +1,8 @@
 // Modules to control application life and create native browser window
 const {app, BrowserWindow, BrowserView} = require('electron')
 const path = require('path');
+const store = new (require('electron-store'))
+const sessionCookieStoreKey = 'cookies.favWin'
 
 function createWindow () {
   // Create the browser window.
@@ -41,6 +43,48 @@ function createWindow () {
   win.addBrowserView(secondView)
   secondView.setBounds({ x: 200, y: 0, width: 1400, height: 600 })
   secondView.webContents.loadURL('https://taobao.com')
+
+  let loadCc = function(){
+    let cookies = store.get(sessionCookieStoreKey) || [];
+    let recoverTimes = cookies.length;
+    if (recoverTimes <= 0) {
+        //无cookie数据无需恢复现场
+        return;
+    }
+    console.log(recoverTimes,'recoverTimesrecoverTimesrecoverTimes888888888');
+    //恢复cookie现场
+    cookies.forEach((cookiesItem) => {
+        let {
+            secure = true,
+            domain = '',
+            path = ''
+        } = cookiesItem
+
+        secondView.webContents.session.cookies
+            .set(
+                Object.assign(cookiesItem, {
+                    url: (secure ? 'https://' : 'http://') + domain.replace(/^\./, '') + path
+                })
+            )
+            .then(() => {
+            })
+            .catch((e) => {
+                console.error({
+                    message: '恢复cookie失败',
+                    cookie: cookiesItem,
+                    errorMessage: e.message,
+                })
+            })
+            .finally(() => {
+                recoverTimes--;
+                if (recoverTimes <= 0) {
+                  return
+                }
+            })
+    });
+  }
+  loadCc();
+
 
   secondView.webContents.on('dom-ready', () => {
     console.log(secondView.webContents.getURL());
@@ -83,10 +127,31 @@ function createWindow () {
     }
     if(String(nowurl).indexOf('item_collect')>-1 || String(nowurl).indexOf('login.jhtml')>-1){
       console.log('1111111111111');
-      secondView.webContents.executeJavaScript(`
-        window.pingHtml();
-      `);
+      //secondView.webContents.executeJavaScript(`
+      //  window.pingHtml();
+      //`);
     }
+  });
+
+  let chgcc = 0;
+
+  secondView.webContents.session.cookies.on('changed', () => {
+    //检测cookies变动事件，标记cookies发生变化
+    //console.log('isCookiesChanged!');
+    secondView.webContents.session.cookies.get({})
+      .then((cookies) => {
+        if(chgcc%30==0){
+          //console.log(cookies,'isCookiesChanged!',chgcc);
+          store.set(sessionCookieStoreKey, cookies);  
+        }
+        chgcc++;
+      })
+      .catch((error) => {
+        console.log({error})
+      })
+      .finally(() => {
+          
+      })
   });
   //secondView.webContents.loadFile('tb.html')
   
@@ -98,7 +163,7 @@ function createWindow () {
 
   // Open the DevTools.
   //secondView.webContents.openDevTools();
-  win.webContents.openDevTools();
+  //win.webContents.openDevTools();
   require('./ipcmain.js')
 }
 
