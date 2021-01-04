@@ -5,11 +5,11 @@ const {download} = require('electron-dl');
 var nowW,nowView;
 
 ipcMain.on('sendM',function(evt,data) {
-  console.log(data);
+  //console.log(data);
   let gourl = String(data);
   nowW = BrowserWindow.getAllWindows();
   let allws = nowW[0].getBrowserViews();
-  console.log(nowW[0].getBrowserViews());
+  //console.log(nowW[0].getBrowserViews());
   if(allws.length>0){
     nowView=allws[0].webContents;
     nowView.loadURL(gourl);
@@ -44,6 +44,7 @@ ipcMain.on('sendBtm',function(evt,data) {
     nowView=allws[0].webContents;
     nowView.executeJavaScript(`
       window.scrollTo(0,document.body.scrollHeight);
+      window.pingChk();
     `);
   }
 });
@@ -74,5 +75,11 @@ ipcMain.on('sendD', function(evt,data) {
   console.log(data,'dddddddddddddd');
   const win = BrowserWindow.getFocusedWindow();
   download(BrowserWindow.getFocusedWindow(), data.url,{directory:data.pp}).then(dl => win.webContents.send("download complete", dl.getSavePath()));
+});
+
+ipcMain.on('sendChk', function(evt,data,allcc) {
+  console.log(data,'sendChksendChksendChksendChk');
+  const win = BrowserWindow.getFocusedWindow();
+  win.webContents.send("update items", data,allcc);
 });
 

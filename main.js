@@ -7,7 +7,7 @@ const sessionCookieStoreKey = 'cookies.favWin'
 function createWindow () {
   // Create the browser window.
   const win = new BrowserWindow({
-    width: 1600,
+    width: 1300,
     height: 600,
     webPreferences: {
       //contextIsolation: true,
@@ -41,7 +41,7 @@ function createWindow () {
     }
   })
   win.addBrowserView(secondView)
-  secondView.setBounds({ x: 200, y: 0, width: 1400, height: 600 })
+  secondView.setBounds({ x: 200, y: 0, width: 1100, height: 600 })
   secondView.webContents.loadURL('https://taobao.com')
 
   let loadCc = function(){
@@ -127,6 +127,13 @@ function createWindow () {
     }
     if(String(nowurl).indexOf('item_collect')>-1 || String(nowurl).indexOf('login.jhtml')>-1){
       console.log('1111111111111');
+      if(nowurl=='https://login.taobao.com/member/login.jhtml'){
+        secondView.webContents.executeJavaScript(`
+          document.querySelector('.login-box-warp').style.right = 'auto';
+          document.querySelector('.login-box-warp').style.left = '0px;'
+          document.querySelector('.login-adlink').style.display = 'none';
+        `);  
+      }
       //secondView.webContents.executeJavaScript(`
       //  window.pingHtml();
       //`);
@@ -153,6 +160,11 @@ function createWindow () {
           
       })
   });
+
+  //'did-redirect-navigation
+  secondView.webContents.on('did-navigation', (evt,url) => {
+    console.log(url,'did-redirect-navigationdid-redirect-navigationdid-redirect-navigation');
+  });
   //secondView.webContents.loadFile('tb.html')
   
   app.on('window-all-closed', () => {
@@ -162,9 +174,10 @@ function createWindow () {
   })
 
   // Open the DevTools.
-  //secondView.webContents.openDevTools();
+  secondView.webContents.openDevTools();
   //win.webContents.openDevTools();
-  require('./ipcmain.js')
+  require('./ipcmain.js');
+  require('./menu/menu.js');
 }
 
 // This method will be called when Electron has finished

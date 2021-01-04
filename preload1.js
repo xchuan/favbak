@@ -47,6 +47,22 @@ var getFav = function(){
   //  /id=(\d+)/g
 }
 
+var chkLens = function(){
+  return document.querySelector('#fav-list ul').getElementsByTagName('LI').length;  
+}
+
+var chkTotals = function(){
+  let totalitems = document.querySelector('.fav-select').getElementsByTagName('EM')[0].innerText;
+  let nowpage = (document.getElementsByClassName('dpl-paginator-curr').length > 0 ? document.getElementsByClassName('dpl-paginator-curr')[0].innerText : 0);
+  let totalpage = String(document.getElementsByClassName('page-jump-form')[0].innerText).split(',')[0];
+  return [totalitems,nowpage,totalpage]
+}
+
+window.pingChk = () => {
+  ipcRenderer.send('sendChk',chkLens(),chkTotals());
+  //ipcRenderer.sendToHost('ping')
+}
+
 window.pingHost = () => {
   ipcRenderer.send('sendM','gogogogog');
   //ipcRenderer.sendToHost('ping')
