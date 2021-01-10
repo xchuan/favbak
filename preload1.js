@@ -1,7 +1,16 @@
 // All of the Node.js APIs are available in the preload process.
 // It has the same sandbox as a Chrome extension.
 const { ipcRenderer} = require('electron')    
+const myDelay = (t, cb) => {
+  return new Promise(function(resolve, reject) {
+    setTimeout(function() {
+        cb();
+        resolve();
+    }, t);
+  });
+}
 
+var autoFlag = false;
 var getFav = function(){
   //document.querySelector('#fav-list ul').innerHTML
   var allli = document.querySelector('#fav-list ul').getElementsByTagName('LI');
@@ -47,6 +56,38 @@ var getFav = function(){
   //  /id=(\d+)/g
 }
 
+var oneStep = function(){
+  var d = new Promise(function(resolve, reject){resolve();});
+  function toBtm(){
+    window.scrollTo(0,document.body.scrollHeight-600);
+  }
+
+  function chkFull(){
+    ipcRenderer.send('sendChkOnly',chkLens());
+  }
+  
+  var step = function(def) {
+    def.then(function(){
+      return myDelay(900, toBtm);
+    }).then(function(){
+      return myDelay(2000, toBtm);
+    }).then(function(){
+      return myDelay(2000, toBtm);
+    }).then(function(){
+      return myDelay(2000, toBtm);
+    }).then(function(){
+      return chkFull(100, chkFull);
+    }).then(function(){
+        //step(def);
+        ipcRenderer.send('sendBak','1');
+        //ipcRenderer.send('sendChkOnly',chkLens());
+        console.log('end 44444');
+    });
+  }
+
+  step(d);
+}
+
 var chkLens = function(){
   return document.querySelector('#fav-list ul').getElementsByTagName('LI').length;  
 }
@@ -58,8 +99,30 @@ var chkTotals = function(){
   return [totalitems,nowpage,totalpage]
 }
 
+
+var getPageUrls = function(){
+  let firstpu = 'https://shoucang.taobao.com/item_collect.htm';
+  let totalpage = String(document.getElementsByClassName('page-jump-form')[0].innerText).split(',')[0].match(/(\d+)/gi)[0];
+  var ll=[];
+  if(document.getElementsByClassName('J_HotPoint')[2].getAttribute('href')!=null){
+    ll = document.getElementsByClassName('J_HotPoint')[2].getAttribute('href').match(/([^?&=]+)=([^?&=]+|)/gi);
+    ll.shift();
+  }
+  // ([^?&=]+)=([^?&=]+|)
+  let output = [];
+  output.push(firstpu);
+  for (let index = 1; index < parseInt(totalpage,10); index++) {
+    let offsetstart = 210*index;
+    let thiurl = ['https://shoucang.taobao.com/item_collect_n.htm?','startRow=',offsetstart,ll.join('&')].join('');
+    output.push(thiurl);
+  }
+  //document.getElementsByClassName('J_HotPoint')[2].getAttribute('href').match(/([^?&=]+)=([^?&=]+|)/gi);
+  return output;
+}
+
 window.pingChk = () => {
   ipcRenderer.send('sendChk',chkLens(),chkTotals());
+  ipcRenderer.send('sendPge',getPageUrls());
   //ipcRenderer.sendToHost('ping')
 }
 
@@ -67,6 +130,17 @@ window.pingHost = () => {
   ipcRenderer.send('sendM','gogogogog');
   //ipcRenderer.sendToHost('ping')
 }
+
+window.setFlag = () => {
+  autoFlag = true;
+  //ipcRenderer.sendToHost('ping')
+}
+window.getFlag = () => {
+  console.log(autoFlag,'autoFlagautoFlagautoFlag');
+  return autoFlag;
+  //ipcRenderer.sendToHost('ping')
+}
+
 window.pingHtml = () => {
 
   ipcRenderer.send('sendH', {
@@ -74,6 +148,16 @@ window.pingHtml = () => {
     'name':(document.getElementsByClassName('dpl-paginator-curr').length > 0 ? document.getElementsByClassName('dpl-paginator-curr')[0].innerText : 'NaN')
   });
 }
+
+window.pingBtm = () => {
+  oneStep();
+  console.log('oneSteponeSteponeStep');
+}
+window.pingNxt = () => {
+  console.log('pingNxtpingNxtpingNxtpingNxtpingNxt');
+  twoStep();
+}
+
 
 window.addEventListener('DOMContentLoaded', () => {
   const replaceText = (selector, text) => {
@@ -83,10 +167,7 @@ window.addEventListener('DOMContentLoaded', () => {
 
   for (const type of ['chrome', 'node', 'electron']) {
     replaceText(`${type}-version`, process.versions[type])
-  }
-
-  
-  
+  } 
 });
 
 /*window.addEventListener('load',() => {

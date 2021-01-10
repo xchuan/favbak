@@ -11,6 +11,9 @@ var sendOne = document.querySelector('#sendone');
 var sendTwo = document.querySelector('#sendtwo');
 var sendBak = document.querySelector('#baknow');
 var sendRefresh = document.querySelector('#refresh');
+var golppage = document.querySelector('#goploop');
+var goqueue = document.querySelector('#goqueue');
+var isAuto = false;
 
 var updateTips = function(a){
     document.querySelector('input').value = a;
@@ -58,13 +61,69 @@ sendRefresh.onclick=function(){
 sendBak.onclick=function(){
     ipcRenderer.send('sendBak','1');
 }
+golppage.onclick=function(){
+    //auto loop page
+    ipcRenderer.send('sendDownpage','1');
+}
+goqueue.onclick=function(){
+    //auto loop page
+    ipcRenderer.send('sendAutoPage','1');
+}
 
 ipcRenderer.on("download complete", (event, file) => {
     console.log(file,'ddddddddddddddddddddd'); // Full file path
+});
+
+ipcRenderer.on("update tips", (event, count) => {
+    updateTips(count);
+});
+ipcRenderer.on("reset tips", (event, count) => {
+    updateTips(30);
 });
 
 ipcRenderer.on("update items", (event, count,allcc) => {
     console.log(count,'update itemsupdate itemsupdate items'); // Full file path
     updateTips(count);
     updateTotal(...allcc);
+});
+
+const myDelay = (t, cb) => {
+    return new Promise(function(resolve, reject) {
+        setTimeout(function() {
+            cb();
+            resolve();
+        }, t);
+    });
+}
+
+var twoStep = function(){
+    var d = new Promise(function(resolve, reject){resolve();});
+    function goLoop(){
+        ipcRenderer.send('sendAutoPage','1');
+    }
+
+    var step = function(def) {
+      def.then(function(){
+        return myDelay(1000, goLoop);
+      }).then(function(){
+          console.log('end 555555');
+      });
+    }
+  
+    step(d);
+  }
+
+ipcRenderer.on('set auto', (event, args) => {
+    isAuto = true;
+    twoStep();
+    console.log('set auto status ...',args);
+});
+ipcRenderer.on('downloadStated', (event, args) => {
+    console.log('start download ...',args);
+});
+ipcRenderer.on('downloadInProgress', (event, args) => {
+    console.log('download99999 ...',args);
+});
+ipcRenderer.on('downloadCompleted', (event, args) => {
+    console.log('down! 00000',args);
 });

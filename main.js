@@ -134,6 +134,20 @@ function createWindow () {
           document.querySelector('.login-adlink').style.display = 'none';
         `);  
       }
+      //https://shoucang.taobao.com/item_collect_n.htm?startRow=210&type=0&value=&tab=0&keyword=&t=1610265823533
+      // || String(nowurl).indexOf('item_collect_n.htm')>-1
+      console.log(String(nowurl).indexOf('item_collect.htm')>-1,nowurl,'nowurl6666');
+      if(String(nowurl).indexOf('item_collect.htm')>-1){
+        secondView.webContents.executeJavaScript(`
+          window.pingChk();
+        `);    
+      }
+
+      if(String(nowurl).indexOf('item_collect_n.htm')>-1){
+        secondView.webContents.executeJavaScript(`
+          window.getFlag();
+        `);    
+      }
       //secondView.webContents.executeJavaScript(`
       //  window.pingHtml();
       //`);
@@ -161,9 +175,71 @@ function createWindow () {
       })
   });
 
+  function guid() {
+    function s4() {
+        return Math.floor((1 + Math.random()) * 0x10000)
+          .toString(16)
+          .substring(1);
+    }
+
+    return s4() + s4() + '-' + s4() + '-' + s4() + '-' + s4() + '-' + s4() + s4() + s4();
+  }
   //'did-redirect-navigation
   secondView.webContents.on('did-navigation', (evt,url) => {
     console.log(url,'did-redirect-navigationdid-redirect-navigationdid-redirect-navigation');
+  });
+
+  secondView.webContents.session.on('will-download', (event, item, webContents) => {
+    let uid = guid();
+
+    win.webContents.send('downloadStated', {
+      itemTotal: item.getTotalBytes(),
+      received: item.getReceivedBytes(),
+      name: item.getFilename(),
+      path: item.getSavePath(),
+      urlpath: uid,
+      status:'startd'
+    });
+    
+    item.on('updated', (event, state) => {
+      if (win.isDestroyed()) {
+          return;
+      }
+      if (state === 'interrupted') {
+          // Interrupted
+      } else if (state === 'progressing') {
+          if (item.isPaused()) {
+              // Handle pause
+          } else {
+            win.webContents.send('downloadInProgress', {
+              itemTotal: item.getTotalBytes(),
+              received: item.getReceivedBytes(),
+              name: item.getFilename(),
+              path: item.getSavePath(),
+              urlpath: uid,
+              status:'downloading'
+            });
+          }
+      }
+    });
+
+    item.once('done', (event, state) => {
+      if (win.isDestroyed()) {
+          return;
+      }
+      if (state === 'completed') {
+        win.webContents.send('downloadCompleted', {
+          itemTotal: item.getTotalBytes(),
+          received: item.getReceivedBytes(),
+          name: item.getFilename(),
+          path: item.getSavePath(),
+          urlpath: uid,
+          status:'finish'
+        });
+      } else {
+          // Handle
+      }
+    });
   });
   //secondView.webContents.loadFile('tb.html')
   
