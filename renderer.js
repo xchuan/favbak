@@ -16,7 +16,11 @@ var goqueue = document.querySelector('#goqueue');
 var isAuto = false;
 
 var updateTips = function(a){
-    document.querySelector('input').value = a;
+    document.querySelector('#itcount').value = a;
+}
+var updateNowp = function(a){
+    var allem = document.getElementsByTagName('EM');
+    allem[1].innerHTML = a;
 }
 var updateTotal = function(a,b,c){
     var allem = document.getElementsByTagName('EM');
@@ -26,6 +30,10 @@ var updateTotal = function(a,b,c){
 }
 document.querySelector('#scrolldown').onclick=function(){
     ipcRenderer.send('sendBtm','1');
+    //window.scrollTo(0,3000)
+}
+document.querySelector('#lookbak').onclick=function(){
+    ipcRenderer.send('goBackup','1');
     //window.scrollTo(0,3000)
 }
 document.querySelector('#downnow').onclick=function(){
@@ -63,7 +71,10 @@ sendBak.onclick=function(){
 }
 golppage.onclick=function(){
     //auto loop page
-    ipcRenderer.send('sendDownpage','1');
+    if(document.querySelector('#startpage').value!=''){
+        ipcRenderer.send('sendNextpage',document.querySelector('#startpage').value);    
+    }
+    //ipcRenderer.send('sendDownpage',document.querySelector('#startpage').value);
 }
 goqueue.onclick=function(){
     //auto loop page
@@ -79,6 +90,9 @@ ipcRenderer.on("update tips", (event, count) => {
 });
 ipcRenderer.on("reset tips", (event, count) => {
     updateTips(30);
+});
+ipcRenderer.on("update now page", (event, count) => {
+    updateNowp(count);
 });
 
 ipcRenderer.on("update items", (event, count,allcc) => {

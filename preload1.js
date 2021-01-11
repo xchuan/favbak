@@ -56,10 +56,11 @@ var getFav = function(){
   //  /id=(\d+)/g
 }
 
-var oneStep = function(){
+var oneStep = function(isauto,start){
   var d = new Promise(function(resolve, reject){resolve();});
   function toBtm(){
     window.scrollTo(0,document.body.scrollHeight-600);
+    ipcRenderer.send('sendChkOnly',chkLens());
   }
 
   function chkFull(){
@@ -79,7 +80,11 @@ var oneStep = function(){
       return chkFull(100, chkFull);
     }).then(function(){
         //step(def);
-        ipcRenderer.send('sendBak','1');
+        if(typeof isauto =='undefined'){
+          ipcRenderer.send('sendBak','1');
+        }else{
+          window.pingHtml(isauto,start);
+        }
         //ipcRenderer.send('sendChkOnly',chkLens());
         console.log('end 44444');
     });
@@ -103,6 +108,7 @@ var chkTotals = function(){
 var getPageUrls = function(){
   let firstpu = 'https://shoucang.taobao.com/item_collect.htm';
   let totalpage = String(document.getElementsByClassName('page-jump-form')[0].innerText).split(',')[0].match(/(\d+)/gi)[0];
+  let nowpage = (document.getElementsByClassName('dpl-paginator-curr').length > 0 ? document.getElementsByClassName('dpl-paginator-curr')[0].innerText : 0);
   var ll=[];
   if(document.getElementsByClassName('J_HotPoint')[2].getAttribute('href')!=null){
     ll = document.getElementsByClassName('J_HotPoint')[2].getAttribute('href').match(/([^?&=]+)=([^?&=]+|)/gi);
@@ -113,8 +119,13 @@ var getPageUrls = function(){
   output.push(firstpu);
   for (let index = 1; index < parseInt(totalpage,10); index++) {
     let offsetstart = 210*index;
-    let thiurl = ['https://shoucang.taobao.com/item_collect_n.htm?','startRow=',offsetstart,ll.join('&')].join('');
+    //https://shoucang.taobao.com/item_collect.htm?startRow=1680 
+    let thiurl = ['https://shoucang.taobao.com/item_collect.htm?','startRow=',offsetstart].join('');
     output.push(thiurl);
+  }
+
+  if(nowpage>1){
+    output = output.slice(nowpage-1);  
   }
   //document.getElementsByClassName('J_HotPoint')[2].getAttribute('href').match(/([^?&=]+)=([^?&=]+|)/gi);
   return output;
@@ -136,25 +147,36 @@ window.setFlag = () => {
   //ipcRenderer.sendToHost('ping')
 }
 window.getFlag = () => {
+  let alltt = chkTotals();
+  ipcRenderer.send('sendPageOnly',alltt[1]);
   console.log(autoFlag,'autoFlagautoFlagautoFlag');
   return autoFlag;
   //ipcRenderer.sendToHost('ping')
 }
 
-window.pingHtml = () => {
-
+window.pingHtml = (isauto,k) => {
+  let auto = true,startk = '';
+  if(typeof isauto!='undefined'){
+    auto = isauto;
+  }
+  if(typeof k!='undefined' && k!=''){
+    startk = k;
+  }
+  //console.log(k,startk,'startkstartkstartkstartk');
   ipcRenderer.send('sendH', {
     'list':getFav(),
+    'auto':auto,
+    'startindex':startk,
     'name':(document.getElementsByClassName('dpl-paginator-curr').length > 0 ? document.getElementsByClassName('dpl-paginator-curr')[0].innerText : 'NaN')
   });
 }
 
-window.pingBtm = () => {
-  oneStep();
-  console.log('oneSteponeSteponeStep');
+window.pingBtm = (a,s) => {
+  //console.log(a,s,'pingBtmpingBtmpingBtm');
+  oneStep(a,s);
 }
 window.pingNxt = () => {
-  console.log('pingNxtpingNxtpingNxtpingNxtpingNxt');
+  //console.log('pingNxtpingNxtpingNxtpingNxtpingNxt');
   twoStep();
 }
 

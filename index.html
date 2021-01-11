@@ -10,24 +10,30 @@
   </head>
   <body>
     <div class="maindv">
-      <h1>Hello World! XXX</h1>
+      <h1>TB备份工具</h1>
       你在使用收藏备份工具 <span id="node-version"></span>,
       <div>1/<em></em> <span>下载中...</span></div>
       <div>当前第<em></em>页，总共<em></em>页，现在在备份第1页收藏</div>
-      Chromium <span id="chrome-version"></span>,
-      and Electron <span id="electron-version"></span>.
       <button id="sendone">去登录</button>
-      <button id="baknow">备份</button>
+      <!--<button id="baknow">备份</button>-->
       <button><a href="menu/about.html" target="_blank">使用说明</a></button>
-      <br>
-      <button id="sendtwo">去收藏</button>
-      <button id="refresh">刷新</button>
-      <button id="downnow">下载</button>
-      <input type="text"/>
-      <br>
-      <button id="scrolldown">滚动</button>
-      <button id="goploop">开始备份</button>
-      <button id="goqueue">自动备份</button>
+      <div>
+        <button id="sendtwo">去收藏</button>
+        <button id="refresh">刷新</button>
+        <button id="downnow">下载</button>
+        <input type="text" id="itcount" class="itnum"/>
+        <input type="text" id="startpage" class="itnum" placeholder="n"/>
+      </div>  
+      <div>
+        <button id="scrolldown">滚动</button>
+        <button id="goploop">跳转页</button>
+        <button id="goqueue">自动备份</button>
+      </div>
+      <div>
+        <hr/>
+        <button id="lookbak">查看备份</button>
+      </div>
+      
     </div>
     <!-- You can also require other files to run in this process -->
     <script src="./renderer.js"></script>

@@ -126,7 +126,7 @@ function createWindow () {
         );
     }
     if(String(nowurl).indexOf('item_collect')>-1 || String(nowurl).indexOf('login.jhtml')>-1){
-      console.log('1111111111111');
+      //console.log('1111111111111');
       if(nowurl=='https://login.taobao.com/member/login.jhtml'){
         secondView.webContents.executeJavaScript(`
           document.querySelector('.login-box-warp').style.right = 'auto';
@@ -136,7 +136,7 @@ function createWindow () {
       }
       //https://shoucang.taobao.com/item_collect_n.htm?startRow=210&type=0&value=&tab=0&keyword=&t=1610265823533
       // || String(nowurl).indexOf('item_collect_n.htm')>-1
-      console.log(String(nowurl).indexOf('item_collect.htm')>-1,nowurl,'nowurl6666');
+      //console.log(String(nowurl).indexOf('item_collect.htm')>-1,nowurl,'nowurl6666');
       if(String(nowurl).indexOf('item_collect.htm')>-1){
         secondView.webContents.executeJavaScript(`
           window.pingChk();

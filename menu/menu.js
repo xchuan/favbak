@@ -1,4 +1,4 @@
-const { Menu,dialog }=require('electron');
+const { Menu,BrowserWindow,dialog }=require('electron');
 const shell = require('electron').shell;
 
 var tpl = [{
@@ -12,6 +12,16 @@ var tpl = [{
     },{
         label:'开发者工具',
         role:'toggledevtools'
+    },{
+        label:'开发者工具II',
+        click:function(){ 
+            let nowW = BrowserWindow.getAllWindows();
+            let allws = nowW[0].getBrowserViews();
+            if(allws.length>0){
+                nowView=allws[0].webContents;
+                nowView.openDevTools();
+            }
+        }
     }]
 },{
     label:'帮助',
