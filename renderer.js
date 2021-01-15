@@ -13,7 +13,7 @@ var sendBak = document.querySelector('#baknow');
 var sendRefresh = document.querySelector('#refresh');
 var golppage = document.querySelector('#goploop');
 var goqueue = document.querySelector('#goqueue');
-var isAuto = false;
+var isAuto = false,nowPageUrl='';
 
 var updateTips = function(a){
     document.querySelector('#itcount').value = a;
@@ -28,9 +28,30 @@ var updateTotal = function(a,b,c){
     allem[1].innerHTML = b;
     allem[2].innerHTML = c;
 }
+var updateUrl = function(u) {
+    nowPageUrl = u;
+}
 document.querySelector('#scrolldown').onclick=function(){
-    ipcRenderer.send('sendBtm','1');
+    console.log(nowPageUrl,'nowPageUrl');
+    //ipcRenderer.send('sendBtm','1');
+    //sendCartBtm
+    if(String(nowPageUrl).indexOf('collect')>-1){
+        ipcRenderer.send('sendBtm','1');
+    }
+    if(String(nowPageUrl).indexOf('cart')>-1){
+        ipcRenderer.send('sendCartBtm','1');
+    }
     //window.scrollTo(0,3000)
+}
+document.querySelector('#backpage').onclick=function(){
+    ipcRenderer.send('sendPageback','1');
+    //window.scrollTo(0,3000)
+}
+document.querySelector('#sendcart').onclick=function(){
+    ipcRenderer.send('sendM','https://cart.taobao.com/cart.htm');
+}
+document.querySelector('#nowstop').onclick=function(){
+    ipcRenderer.send('sendStop',true);
 }
 document.querySelector('#lookbak').onclick=function(){
     ipcRenderer.send('goBackup','1');
@@ -62,13 +83,13 @@ sendOne.onclick=function(){
 sendTwo.onclick=function(){
     ipcRenderer.send('sendM','https://shoucang.taobao.com/item_collect.htm');
 }
-sendRefresh.onclick=function(){
+/*sendRefresh.onclick=function(){
     ipcRenderer.send('sendR','1');
 }
 
 sendBak.onclick=function(){
     ipcRenderer.send('sendBak','1');
-}
+}*/
 golppage.onclick=function(){
     //auto loop page
     if(document.querySelector('#startpage').value!=''){
@@ -78,7 +99,12 @@ golppage.onclick=function(){
 }
 goqueue.onclick=function(){
     //auto loop page
-    ipcRenderer.send('sendAutoPage','1');
+    if(String(nowPageUrl).indexOf('collect')>-1){
+        ipcRenderer.send('sendAutoPage','1');    
+    }
+    if(String(nowPageUrl).indexOf('cart')>-1){
+        ipcRenderer.send('sendAutoCart','1');    
+    }
 }
 
 ipcRenderer.on("download complete", (event, file) => {
@@ -93,6 +119,10 @@ ipcRenderer.on("reset tips", (event, count) => {
 });
 ipcRenderer.on("update now page", (event, count) => {
     updateNowp(count);
+});
+
+ipcRenderer.on("update now url", (event, url) => {
+    updateUrl(url);
 });
 
 ipcRenderer.on("update items", (event, count,allcc) => {

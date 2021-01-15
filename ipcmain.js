@@ -2,7 +2,7 @@ var { ipcMain,BrowserWindow,dialog,app} = require('electron');
 const fs = require('fs');
 const {download} = require('electron-dl');
 
-var nowW,nowView,pageUrls=[];
+var nowW,nowView,pageUrls=[],isStop=false;
 
 var goNext = function (url,k) {
   //https://shoucang.taobao.com/item_collect.htm?startRow=1680
@@ -49,6 +49,9 @@ ipcMain.on('sendNextpage',function(evt,data) {
     //nowView.executeJavaScript('document.getElementsByClassName(\'J_NextPage\')[0].setAttribute("href","'+pageUrls[data]+'");');
   }
 })
+ipcMain.on('sendStop',function(evt,data) {
+  isStop = data;
+})
 ipcMain.on('goBackup',function(evt,data) {
   let nowW = BrowserWindow.getAllWindows();
   let allws = nowW[0].getBrowserViews();
@@ -57,8 +60,20 @@ ipcMain.on('goBackup',function(evt,data) {
     nowView.loadFile('backup.html');
   }
 })
+ipcMain.on('sendPageback',function(evt,data) {
+  let nowW = BrowserWindow.getAllWindows();
+  let allws = nowW[0].getBrowserViews();
+  if(allws.length>0){
+    nowView=allws[0].webContents;
+    nowView.goBack();
+  }
+})
 ipcMain.on('sendBak',function(evt,data) {
   //console.log(data,'sendBaksendBak');
+  if(isStop){
+    console.log(data,'is Stopped!');
+    return false;
+  }
   let gourl = String(data);
   nowW = BrowserWindow.getAllWindows();
   let allws = nowW[0].getBrowserViews();
@@ -84,6 +99,20 @@ ipcMain.on('sendBtm',function(evt,data) {
     nowView.executeJavaScript(`
       window.scrollTo(0,document.body.scrollHeight);
       window.pingChk();
+    `);
+  }
+});
+
+ipcMain.on('sendCartBtm',function(evt,data) {
+  console.log(data,'sendBtmsendBtm22222');
+  let gourl = String(data);
+  nowW = BrowserWindow.getAllWindows();
+  let allws = nowW[0].getBrowserViews();
+  if(allws.length>0){
+    nowView=allws[0].webContents;
+    nowView.executeJavaScript(`
+      window.scrollTo(0,document.body.scrollHeight);
+      window.pingCartChk();
     `);
   }
 });
@@ -169,9 +198,22 @@ ipcMain.on('sendAutoPage', function(evt,data) {
   nowW = BrowserWindow.getAllWindows();
   let allws = nowW[0].getBrowserViews();
   if(allws.length>0){
+    isStop = false;
     nowView=allws[0].webContents;
     nowView.executeJavaScript(`
       window.pingBtm();
+    `);
+  }
+});
+ipcMain.on('sendAutoCart', function(evt,data) {
+  let gourl = String(data);
+  nowW = BrowserWindow.getAllWindows();
+  let allws = nowW[0].getBrowserViews();
+  if(allws.length>0){
+    isStop = false;
+    nowView=allws[0].webContents;
+    nowView.executeJavaScript(`
+      window.pingCart();
     `);
   }
 });

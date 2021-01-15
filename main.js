@@ -90,6 +90,7 @@ function createWindow () {
     console.log(secondView.webContents.getURL());
     let nowurl = secondView.webContents.getURL();
 
+    win.webContents.send("update now url", nowurl);
     if(nowurl=='https://www.taobao.com/'){
       secondView.webContents
         .executeJavaScript(

@@ -56,6 +56,54 @@ var getFav = function(){
   //  /id=(\d+)/g
 }
 
+var getCart = function() {
+  var allli = document.querySelector('#J_OrderList').getElementsByClassName('item-content');
+  
+  var output =[];
+  for (let k = 0; k < allli.length; k++) {
+    let nowitem = allli[k];
+    let nowshp= allli[k].parentElement.parentElement.parentElement.getAttribute("ID").split('_');
+    let nowhtml = nowitem.innerHTML.replace('title="商品被下架、删除、库存不足，或商家处于被监管或冻结状态"','').replace('href=\"//service.taobao.com/support/knowledge-1116245.htm\"','').replace(/\s+/g, " ");
+    let nowhtmlp = '';
+    let foundp = -1;
+    if(nowshp.length>0){
+      foundp = nowshp[3];
+    }//else{
+      //console.log(k,'undefinedundefinedundefined');
+    //}
+    
+    let getlink = /(href|title|src)="(.*?)"/g;
+    let getpriceId = /id=(\d+)/g;
+    let getshopid = /user_number_id=(\d+)/g;
+    let getpriceOld = /￥(\d+).(\d+)/g;
+    let found = nowhtml.match(getlink);
+    let foundold = nowhtml.match(getpriceOld);
+    
+    //console.log(foundp,'foundpfoundp');
+    if(found.length>0){
+      let linksrc = found[0].replace('href="','').replace('"','');
+      let linktitle = found[1].replace('title="','').replace('"','');
+      //console.log(linksrc,linktitle,k);
+      let linkimg = found[2].replace('src="','').replace('"','').replace('160x160xz','430x430q90'); 
+      let linkold = (foundold!=null ? foundold[0].replace('￥','') : 0);
+      let linkpp = (foundold!=null ? foundold[1].replace('￥','') : 0);
+      let foundid = linksrc.match(getpriceId);
+      if(foundid===null)foundid=[-1];
+      if(foundid!=null && foundid.length>0){
+        let opkey = String(foundid[0]).replace('id=','');
+        let opkeyp = '//store.taobao.com/shop/view_shop.htm?user_number_id='+foundp;
+        //,'shop':linkshop
+        output.push({
+          'id':opkey,'t':linktitle,'lk':linksrc,'img':linkimg,'old':linkold,'price':linkpp,'shop':opkeyp
+        })
+        //output[foundid[0]] = linksrc;  
+      }  
+    }
+  } 
+  //console.log(output);
+  return output; 
+}
+
 var oneStep = function(isauto,start){
   var d = new Promise(function(resolve, reject){resolve();});
   function toBtm(){
@@ -104,6 +152,11 @@ var chkTotals = function(){
   return [totalitems,nowpage,totalpage]
 }
 
+var chkCartTotals = function() {
+  var allli = document.querySelector('#J_OrderList').getElementsByClassName('item-content'); 
+  return allli.length
+}
+
 
 var getPageUrls = function(){
   let firstpu = 'https://shoucang.taobao.com/item_collect.htm';
@@ -134,6 +187,10 @@ var getPageUrls = function(){
 window.pingChk = () => {
   ipcRenderer.send('sendChk',chkLens(),chkTotals());
   ipcRenderer.send('sendPge',getPageUrls());
+  //ipcRenderer.sendToHost('ping')
+}
+window.pingCartChk = () => {
+  ipcRenderer.send('sendChkOnly',chkCartTotals());
   //ipcRenderer.sendToHost('ping')
 }
 
@@ -168,6 +225,15 @@ window.pingHtml = (isauto,k) => {
     'auto':auto,
     'startindex':startk,
     'name':(document.getElementsByClassName('dpl-paginator-curr').length > 0 ? document.getElementsByClassName('dpl-paginator-curr')[0].innerText : 'NaN')
+  });
+}
+
+window.pingCart = () => {
+  ipcRenderer.send('sendH', {
+    'list':getCart(),
+    'auto':false,
+    'startindex':0,
+    'name':'cart'
   });
 }
 
